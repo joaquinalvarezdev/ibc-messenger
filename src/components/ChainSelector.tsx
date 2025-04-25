@@ -11,9 +11,9 @@ export default function ChainSelector({ label, value, onChange }: Props) {
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-200 mb-1">{label}</label>
       <select
+        className="w-full bg-gray-900 border border-gray-600 text-white px-3 py-2 rounded"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 w-64"
       >
         {CHAINS.map((chain) => (
           <option key={chain.chainId} value={chain.chainId}>

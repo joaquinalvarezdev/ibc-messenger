@@ -1,10 +1,10 @@
-// App.tsx
 import { useState } from "react";
 import ChainSelector from "./components/ChainSelector";
 import WalletConnect from "./components/WalletConnect";
 import SuggestChainButton from "./components/SuggestChainButton";
 import AddressDisplay from "./components/AddressDisplay";
 import { CHAINS } from "./utils/chains";
+import { useBalance } from "./hooks/useBalance";
 
 export default function App() {
   const [sourceChain, setSourceChain] = useState(CHAINS.at(0)?.chainId || "osmo-test-5");
@@ -14,14 +14,24 @@ export default function App() {
   const [addresses, setAddresses] = useState<Record<string, string>>({});
 
   const sourceInfo = CHAINS.find((c) => c.chainId === sourceChain);
+  const sourceAddress = addresses[sourceChain] ?? "";
   const tokenDenom = sourceInfo?.denom.replace("u", "").toUpperCase();
 
   const handleSetAddress = (chainId: string, addr: string) => {
     setAddresses((prev) => ({ ...prev, [chainId]: addr }));
   };
 
+  const { balance, loading: loadingBalance } = useBalance(
+    sourceInfo?.rpc || "",
+    sourceAddress,
+    sourceInfo?.denom || ""
+  );
+
   const bothConnected = addresses[sourceChain] && addresses[targetChain];
   const isValidAmount = !!amount && !isNaN(Number(amount)) && Number(amount) > 0; // TODO - move to utils isNumber
+  const isSameChain = sourceChain === targetChain;
+  const hasEnoughBalance = parseFloat(amount) <= parseFloat(balance);
+  const canTransfer = bothConnected && isValidAmount && !isSameChain && hasEnoughBalance;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
@@ -38,7 +48,10 @@ export default function App() {
               inputMode="decimal"
               type="text"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                const raw = e.target.value;
+                if (/^\d*\.?\d*$/.test(raw)) setAmount(raw);
+              }}
               className="bg-gray-900 border border-gray-600 text-white placeholder-gray-500 px-3 py-3 pr-20 rounded w-full text-lg font-semibold appearance-none"
               placeholder="0.00"
             />
@@ -46,16 +59,31 @@ export default function App() {
               {tokenDenom || "TOKEN"}
             </span>
           </div>
-          {!isValidAmount && amount !== "" && (
-            <p className="text-red-500 text-xs mt-1">Enter a valid amount greater than 0</p>
-          )}
+
+          <p className="text-xs text-gray-400 mt-1">
+            {loadingBalance ? "Checking balance..." : `Available: ${balance} ${tokenDenom}`}
+          </p>
+
+          <div className="text-xs mt-1 space-y-1">
+            {!isValidAmount && amount !== "" && (
+              <p className="text-red-500">Enter a valid amount greater than 0</p>
+            )}
+            {isSameChain && (
+              <p className="text-red-500">Source and target chains must be different</p>
+            )}
+            {isValidAmount && !hasEnoughBalance && (
+              <p className="text-red-500">Insufficient balance to transfer this amount</p>
+            )}
+          </div>
         </div>
 
         <button
           className={`mt-6 w-full py-3 rounded-lg transition text-lg font-semibold ${
-            isValidAmount ? "bg-green-500 hover:bg-green-600 text-white" : "bg-gray-600 text-gray-400 cursor-not-allowed"
+            canTransfer
+              ? "bg-green-500 hover:bg-green-600 text-white"
+              : "bg-gray-600 text-gray-400 cursor-not-allowed"
           }`}
-          disabled={!isValidAmount}
+          disabled={!canTransfer || loadingBalance}
         >
           <span className="flex items-center justify-center gap-2">
             <span className="text-xl">➡</span> Transfer
@@ -70,8 +98,16 @@ export default function App() {
             🛠️ Setup Supported Chains
           </button>
 
-          <AddressDisplay address={addresses[sourceChain]} chainId={sourceChain} label="From Address" />
-          <AddressDisplay address={addresses[targetChain]} chainId={targetChain} label="To Address" />
+          <AddressDisplay
+            address={addresses[sourceChain]}
+            chainId={sourceChain}
+            label="From Address"
+          />
+          <AddressDisplay
+            address={addresses[targetChain]}
+            chainId={targetChain}
+            label="To Address"
+          />
         </div>
 
         <div className="w-full mt-4">
