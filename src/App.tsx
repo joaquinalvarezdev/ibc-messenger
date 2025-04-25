@@ -21,6 +21,7 @@ export default function App() {
   };
 
   const bothConnected = addresses[sourceChain] && addresses[targetChain];
+  const isValidAmount = !!amount && !isNaN(Number(amount)) && Number(amount) > 0; // TODO - move to utils isNumber
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
@@ -45,9 +46,17 @@ export default function App() {
               {tokenDenom || "TOKEN"}
             </span>
           </div>
+          {!isValidAmount && amount !== "" && (
+            <p className="text-red-500 text-xs mt-1">Enter a valid amount greater than 0</p>
+          )}
         </div>
 
-        <button className="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition text-lg">
+        <button
+          className={`mt-6 w-full py-3 rounded-lg transition text-lg font-semibold ${
+            isValidAmount ? "bg-green-500 hover:bg-green-600 text-white" : "bg-gray-600 text-gray-400 cursor-not-allowed"
+          }`}
+          disabled={!isValidAmount}
+        >
           <span className="flex items-center justify-center gap-2">
             <span className="text-xl">➡</span> Transfer
           </span>
@@ -61,16 +70,8 @@ export default function App() {
             🛠️ Setup Supported Chains
           </button>
 
-          <AddressDisplay
-            address={addresses[sourceChain]}
-            chainId={sourceChain}
-            label="From Address"
-          />
-          <AddressDisplay
-            address={addresses[targetChain]}
-            chainId={targetChain}
-            label="To Address"
-          />
+          <AddressDisplay address={addresses[sourceChain]} chainId={sourceChain} label="From Address" />
+          <AddressDisplay address={addresses[targetChain]} chainId={targetChain} label="To Address" />
         </div>
 
         <div className="w-full mt-4">
