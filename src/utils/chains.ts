@@ -17,11 +17,11 @@ export const CHAINS: ChainOption[] = [
     prefix: "osmo",
   },
   {
-    name: "Stargaze Testnet",
-    chainId: "elgafar-1",
-    rpc: "https://rpc.elgafar-1.stargaze-apis.com",
-    rest: "https://rest.elgafar-1.stargaze-apis.com",
-    denom: "ustars",
-    prefix: "stars",
+    name: "Kyve Kaon Testnet",
+    chainId: "kaon-1",
+    rpc: "https://rpc.testcosmos.directory/kyvetestnet",
+    rest: "https://rest.testcosmos.directory/kyvetestnet",
+    denom: "tkyve",
+    prefix: "kyve",
   },
 ];

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import ChainSelector from "./components/ChainSelector";
 import WalletConnect from "./components/WalletConnect";
+import { useBalance } from "./hooks/useBalance";
 import SuggestChainButton from "./components/SuggestChainButton";
 import AddressDisplay from "./components/AddressDisplay";
 import { CHAINS } from "./utils/chains";
-import { useBalance } from "./hooks/useBalance";
+import { ibcChannels } from "./utils/ibcChannels";
+import { sendIbcTokens } from "./services/ibcService";
 
 export default function App() {
   const [sourceChain, setSourceChain] = useState(CHAINS.at(0)?.chainId || "osmo-test-5");
@@ -26,6 +28,36 @@ export default function App() {
     sourceAddress,
     sourceInfo?.denom || ""
   );
+
+  const handleTransfer = async () => {
+    const sourceAddr = addresses[sourceChain];
+    const targetAddr = addresses[targetChain];
+    const sourceInfo = CHAINS.find((c) => c.chainId === sourceChain);
+    const channel = ibcChannels[sourceChain]?.[targetChain];
+
+    if (!sourceAddr || !targetAddr || !sourceInfo || !channel) {
+      alert("Missing info for transfer.");
+      return;
+    }
+
+    try {
+      const txHash = await sendIbcTokens({
+        senderAddress: sourceAddr,
+        recipientAddress: targetAddr,
+        amount: (parseFloat(amount) * 1_000_000).toString(),
+        denom: sourceInfo.denom,
+        sourceChainId: sourceInfo.chainId,
+        rpcEndpoint: sourceInfo.rpc,
+        sourceChannel: channel,
+      });
+
+      console.log("✅ Tx Hash:", txHash);
+      alert(`✅ Transfer sent! Tx: ${txHash}`);
+    } catch (err) {
+      console.error("❌ Transfer failed:", err);
+      alert("❌ Transfer failed. Check console.");
+    }
+  };
 
   const bothConnected = addresses[sourceChain] && addresses[targetChain];
   const isValidAmount = !!amount && !isNaN(Number(amount)) && Number(amount) > 0; // TODO - move to utils isNumber
@@ -84,6 +116,7 @@ export default function App() {
               : "bg-gray-600 text-gray-400 cursor-not-allowed"
           }`}
           disabled={!canTransfer || loadingBalance}
+          onClick={handleTransfer}
         >
           <span className="flex items-center justify-center gap-2">
             <span className="text-xl">➡</span> Transfer
