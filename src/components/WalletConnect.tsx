@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-const CHAIN_ID = "osmo-test-5";
+interface Props {
+  chainId: string;
+}
 
-export default function WalletConnect() {
+export default function WalletConnect({ chainId }: Props) {
   const [address, setAddress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,8 +15,8 @@ export default function WalletConnect() {
         return;
       }
 
-      await window.keplr.enable(CHAIN_ID);
-      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
+      await window.keplr.enable(chainId);
+      const offlineSigner = window.keplr.getOfflineSigner(chainId);
       const accounts = await offlineSigner.getAccounts();
 
       setAddress(accounts[0].address);
