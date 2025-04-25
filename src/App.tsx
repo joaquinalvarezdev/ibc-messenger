@@ -1,16 +1,26 @@
+// App.tsx
 import { useState } from "react";
 import ChainSelector from "./components/ChainSelector";
 import WalletConnect from "./components/WalletConnect";
 import SuggestChainButton from "./components/SuggestChainButton";
+import AddressDisplay from "./components/AddressDisplay";
 import { CHAINS } from "./utils/chains";
 
 export default function App() {
-  const [sourceChain, setSourceChain] = useState("osmo-test-5");
-  const [targetChain, setTargetChain] = useState("elgafar-1");
+  const [sourceChain, setSourceChain] = useState(CHAINS.at(0)?.chainId || "osmo-test-5");
+  const [targetChain, setTargetChain] = useState(CHAINS.at(1)?.chainId || "elgafar-1");
   const [showSetupModal, setShowSetupModal] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [addresses, setAddresses] = useState<Record<string, string>>({});
+
   const sourceInfo = CHAINS.find((c) => c.chainId === sourceChain);
   const tokenDenom = sourceInfo?.denom.replace("u", "").toUpperCase();
-  const [amount, setAmount] = useState("");
+
+  const handleSetAddress = (chainId: string, addr: string) => {
+    setAddresses((prev) => ({ ...prev, [chainId]: addr }));
+  };
+
+  const bothConnected = addresses[sourceChain] && addresses[targetChain];
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
@@ -22,41 +32,62 @@ export default function App() {
 
         <div className="mt-4">
           <label className="text-sm mb-1 block text-gray-300">Amount to transfer</label>
-          <div className="flex items-center gap-2">
+          <div className="relative flex items-center">
             <input
-              type="number"
-              min="0"
-              step="any"
+              inputMode="decimal"
+              type="text"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="bg-gray-900 border border-gray-600 text-white px-3 py-2 rounded w-full"
-              placeholder="0.0"
+              className="bg-gray-900 border border-gray-600 text-white placeholder-gray-500 px-3 py-3 pr-20 rounded w-full text-lg font-semibold appearance-none"
+              placeholder="0.00"
             />
-            <span className="text-white font-medium">{tokenDenom || "TOKEN"}</span>
+            <span className="absolute right-4 text-white text-sm font-semibold">
+              {tokenDenom || "TOKEN"}
+            </span>
           </div>
         </div>
 
-        <button className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition">
-          Transfer
+        <button className="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition text-lg">
+          <span className="flex items-center justify-center gap-2">
+            <span className="text-xl">➡</span> Transfer
+          </span>
         </button>
 
-        <div className="flex justify-between mt-4 gap-2">
+        <div className="mt-6 border-t border-gray-700 pt-4 flex flex-col gap-3 items-center text-sm">
           <button
             onClick={() => setShowSetupModal(true)}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded"
+            className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded"
           >
             🛠️ Setup Supported Chains
           </button>
-          <div className="w-full">
-            <WalletConnect chainId={sourceChain} />
-          </div>
+
+          <AddressDisplay
+            address={addresses[sourceChain]}
+            chainId={sourceChain}
+            label="From Address"
+          />
+          <AddressDisplay
+            address={addresses[targetChain]}
+            chainId={targetChain}
+            label="To Address"
+          />
+        </div>
+
+        <div className="w-full mt-4">
+          {bothConnected ? (
+            <button className="w-full bg-emerald-600 text-white py-3 rounded-lg opacity-90 cursor-default text-lg font-semibold">
+              ✅ Wallet Connected
+            </button>
+          ) : (
+            <WalletConnect chainIds={[sourceChain, targetChain]} setAddress={handleSetAddress} />
+          )}
         </div>
       </div>
 
       {showSetupModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-xl w-80 border border-gray-600">
-            <h2 className="text-xl font-semibold mb-4 text-center">Setup Chains</h2>
+            <h2 className="text-xl font-semibold mb-4 text-center">Setup Chains on Keplr Wallet</h2>
             {CHAINS.map((chain) => (
               <div key={chain.chainId} className="mb-2">
                 <SuggestChainButton chain={chain} />
