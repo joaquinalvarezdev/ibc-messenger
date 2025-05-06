@@ -17,11 +17,11 @@ export const CHAINS: ChainOption[] = [
     prefix: "osmo",
   },
   {
-    name: "Kyve Kaon Testnet",
-    chainId: "kaon-1",
-    rpc: "https://rpc.testcosmos.directory/kyvetestnet",
-    rest: "https://rest.testcosmos.directory/kyvetestnet",
-    denom: "tkyve",
-    prefix: "kyve",
+    name: "Juno Testnet",
+    chainId: "uni-7",
+    rpc: "https://rpc.testcosmos.directory/junotestnet",
+    rest: "https://rest.testcosmos.directory/junotestnet",
+    denom: "ujunox",
+    prefix: "juno",
   },
 ];

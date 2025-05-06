@@ -1,8 +1,8 @@
 export const ibcChannels: Record<string, Record<string, string>> = {
-  "osmo-test-5": {
-    "kaon-1": "channel-10",
+  "uni-7": {
+    "osmo-test-5": "channel-0",
   },
-  "kaon-1": {
-    "osmo-test-5": "channel-2",
+  "osmo-test-5": {
+    "uni-7": "channel-10337",
   },
 };

@@ -60,7 +60,7 @@ export default function App() {
   };
 
   const bothConnected = addresses[sourceChain] && addresses[targetChain];
-  const isValidAmount = !!amount && !isNaN(Number(amount)) && Number(amount) > 0; // TODO - move to utils isNumber
+  const isValidAmount = !!amount && !isNaN(Number(amount)) && Number(amount) > 0;
   const isSameChain = sourceChain === targetChain;
   const hasEnoughBalance = parseFloat(amount) <= parseFloat(balance);
   const canTransfer = bothConnected && isValidAmount && !isSameChain && hasEnoughBalance;
