@@ -38,7 +38,7 @@ Example:
 
 
 ```typescript 
-export const CHAINS = [
+export const CHAINS: ChainOption[] = [
   {
     name: "Osmosis Testnet",
     chainId: "osmo-test-5",
@@ -49,10 +49,10 @@ export const CHAINS = [
   },
   {
     name: "Juno Testnet",
-    chainId: "uni-6",
-    rpc: "https://rpc.uni.juno.deuslabs.fi",
-    rest: "https://api.uni.juno.deuslabs.fi",
-    denom: "ujuno",
+    chainId: "uni-7",
+    rpc: "https://rpc.testcosmos.directory/junotestnet",
+    rest: "https://rest.testcosmos.directory/junotestnet",
+    denom: "ujunox",
     prefix: "juno",
   },
 ];
