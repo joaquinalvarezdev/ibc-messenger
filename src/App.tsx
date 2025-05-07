@@ -13,7 +13,9 @@ export default function App() {
   const [targetChain, setTargetChain] = useState(CHAINS.at(1)?.chainId || "elgafar-1");
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [amount, setAmount] = useState("");
+  const [txHash, setTxHash] = useState("");
   const [addresses, setAddresses] = useState<Record<string, string>>({});
+  const [isTransferring, setIsTransferring] = useState(false);
 
   const sourceInfo = CHAINS.find((c) => c.chainId === sourceChain);
   const sourceAddress = addresses[sourceChain] ?? "";
@@ -30,6 +32,7 @@ export default function App() {
   );
 
   const handleTransfer = async () => {
+    setIsTransferring(true);
     const sourceAddr = addresses[sourceChain];
     const targetAddr = addresses[targetChain];
     const sourceInfo = CHAINS.find((c) => c.chainId === sourceChain);
@@ -51,11 +54,12 @@ export default function App() {
         sourceChannel: channel,
       });
 
-      console.log("✅ Tx Hash:", txHash);
-      alert(`✅ Transfer sent! Tx: ${txHash}`);
+      setTxHash(txHash);
     } catch (err) {
       console.error("❌ Transfer failed:", err);
       alert("❌ Transfer failed. Check console.");
+    } finally {
+      setIsTransferring(false);
     }
   };
 
@@ -111,17 +115,52 @@ export default function App() {
 
         <button
           className={`mt-6 w-full py-3 rounded-lg transition text-lg font-semibold ${
-            canTransfer
+            canTransfer && !isTransferring
               ? "bg-green-500 hover:bg-green-600 text-white"
               : "bg-gray-600 text-gray-400 cursor-not-allowed"
           }`}
-          disabled={!canTransfer || loadingBalance}
+          disabled={!canTransfer || loadingBalance || isTransferring}
           onClick={handleTransfer}
         >
           <span className="flex items-center justify-center gap-2">
-            <span className="text-xl">➡</span> Transfer
+            {isTransferring ? (
+              <svg className="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8z"
+                />
+              </svg>
+            ) : (
+              <span className="text-xl">➡</span>
+            )}
+            {isTransferring ? "Transferring..." : "Transfer"}
           </span>
         </button>
+
+        {txHash && (
+          <div className="mt-4 text-sm bg-gray-700 text-green-400 rounded p-3 break-all">
+            ✅ Transfer successful!
+            <br />
+            Tx Hash: <span className="font-mono">{txHash}</span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(txHash);
+              }}
+              className="ml-2 text-blue-300 hover:underline"
+            >
+              📋
+            </button>
+          </div>
+        )}
 
         <div className="mt-6 border-t border-gray-700 pt-4 flex flex-col gap-3 items-center text-sm">
           <button
