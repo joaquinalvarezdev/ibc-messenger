@@ -11,7 +11,8 @@ export default function AddressDisplay({ address, chainId, label }: Props) {
   const [copied, setCopied] = useState(false);
 
   const chain = CHAINS.find((c) => c.chainId === chainId);
-  const icon = chain ? `/icons/${chain.prefix}.svg` : null;
+  const baseUrl = import.meta.env.BASE_URL;
+  const icon = chain ? `${baseUrl}/icons/${chain.prefix}.svg` : null;
 
   const handleCopy = () => {
     if (!address) return;
